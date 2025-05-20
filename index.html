@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🔥 Neon Space Bar Clicker 🔥</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+
+    body {
+      background-color: #000;
+      color: #39ff14;
+      font-family: 'Orbitron', monospace;
+      text-align: center;
+      padding-top: 40px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 3rem;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    }
+
+    #clicks, #powerInfo {
+      font-size: 1.5rem;
+      margin: 10px;
+      color: #39ff14;
+      text-shadow: 0 0 6px #39ff14, 0 0 12px #39ff14;
+    }
+
+    button {
+      font-size: 1.5rem;
+      padding: 15px 30px;
+      margin: 20px;
+      background-color: #111;
+      color: #ff004f;
+      border: 2px solid #ff004f;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff004f;
+      transition: 0.3s;
+      user-select: none;
+    }
+
+    button:hover {
+      background-color: #ff004f;
+      color: #000;
+      box-shadow: 0 0 20px #ff004f, 0 0 40px #ff004f;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <h1>🔥 Neon Space Bar Clicker 🔥</h1>
+  <div id="clicks">Clicks: 0</div>
+  <div id="powerInfo">User Click Power: 1 | Auto Click Power: 0 clicks/sec</div>
+  <button onclick="addClick()">Click Me!</button>
+  <br>
+  <a href="page2.html"><button>Go to Upgrades</button></a>
+
+  <script>
+    let clicks = parseInt(localStorage.getItem("clicks")) || 0;
+    let clickPower = parseFloat(localStorage.getItem("clickPower")) || 1;
+
+    let autoClickPower = 0;
+    let autoIntervals = [];
+
+    function updateDisplay() {
+      document.getElementById("clicks").textContent = `Clicks: ${clicks}`;
+      document.getElementById("powerInfo").textContent = 
+        `User Click Power: ${clickPower.toFixed(2)} | Auto Click Power: ${autoClickPower} clicks/sec`;
+    }
+
+    function addClick() {
+      clicks += clickPower;
+      localStorage.setItem("clicks", clicks);
+      updateDisplay();
+    }
+
+    document.body.onkeyup = function(e) {
+      if (e.code === "Space") {
+        addClick();
+      }
+    };
+
+    function clearAutoIntervals() {
+      for (let interval of autoIntervals) clearInterval(interval);
+      autoIntervals = [];
+    }
+
+    // This loads auto click upgrades, calculate auto power & set intervals
+    function loadAutoUpgrades() {
+      clearAutoIntervals();
+      autoClickPower = 0;
+
+      // example: just like in upgrades, check localStorage for which upgrades bought and add their auto clicks
+      // I'm assuming you store level info as in page2, adjust if different
+
+      // Sample upgrades with auto click power
+      // Replace with your actual upgrades if you want
+      const autoUpgrades = [
+        { id: "upg1", power: 1 },
+        { id: "upg4", power: 5 },
+        { id: "upg6", power: 10 },
+        { id: "upg9", power: 20 },
+        { id: "upg12", power: 50 },
+        { id: "upg15", power: 500 },
+      ];
+
+      for (const upg of autoUpgrades) {
+        const level = parseInt(localStorage.getItem(upg.id + "_level")) || 0;
+        if (level > 0) {
+          autoClickPower += upg.power * level;
+          // start interval for each upgrade type
+          autoIntervals.push(setInterval(() => {
+            clicks += upg.power * level;
+            localStorage.setItem("clicks", clicks);
+            updateDisplay();
+          }, 1000));
+        }
+      }
+    }
+
+    updateDisplay();
+    loadAutoUpgrades();
+  </script>
+</body>
+</html>
