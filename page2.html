@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upgrades - Neon Space Clicker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+
+    body {
+      background-color: #000;
+      color: #39ff14;
+      font-family: 'Orbitron', monospace;
+      text-align: center;
+      padding-top: 40px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 3rem;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    }
+
+    .upgrade {
+      background-color: #111;
+      border: 2px solid #ff004f;
+      color: #ff004f;
+      padding: 15px;
+      margin: 20px auto;
+      width: 350px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ff004f;
+      transition: transform 0.3s, box-shadow 0.3s;
+      animation: fadeIn 0.5s ease-in;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .upgrade:hover {
+      background-color: #ff004f;
+      color: #000;
+      box-shadow: 0 0 20px #ff004f, 0 0 40px #ff004f;
+      transform: scale(1.05);
+    }
+
+    .description {
+      font-size: 0.9rem;
+      color: #0ff;
+      margin-top: 5px;
+    }
+
+    .title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #39ff14;
+    }
+
+    a {
+      color: #0ff;
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      font-size: 1.2rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Neon Upgrades 🚀</h1>
+  <div id="upgrades"></div>
+  <a href="index.html">⬅ Back to Game</a>
+
+  <script>
+    let clicks = parseInt(localStorage.getItem("clicks")) || 0;
+    let clickPower = parseFloat(localStorage.getItem("clickPower")) || 1;
+
+    const titles = [
+      "Spacebar Smasher", "Click Commander", "Cosmic Tapper", "Pixel Crusher",
+      "Neon Warrior", "Quantum Clicker", "Alien Accelerator", "Starship Striker",
+      "Void Master", "Glitch Overlord", "Nebula Hacker", "Turbo Typer",
+      "Galaxy Puncher", "Code Blazer", "Energy Reactor", "Time Breaker",
+      "Dimension Jumper", "Astro Infuser", "Click Beast", "Core Rebooter",
+      "God Upgrade", "Infinity Touch", "Meta Tap", "Pulse Igniter",
+      "Exo Click Engine", "Mega Mod", "Omega Reactor", "Hyper Surge",
+      "Xeno Blast", "Warp Drive", "Cosmic Control", "Photon Bouncer",
+      "Hacker Boost", "Lunar Hack", "Cyber Fury", "Blast Core",
+      "Singularity Spark", "Ion Pulse", "System Shocker", "Alpha Circuit",
+      "Dark Matter Tap", "Nova Module", "Plasma Bolt", "Power Flux",
+      "Supernova Click", "Magnetizer", "Binary Burner", "Synth Surge",
+      "Hackwave", "Final Protocol"
+    ];
+
+    const multipliers = [
+      2, 3, 2.5, 4, 5, 3.5, 6, 7, 4.5, 8,
+      9, 5.5, 10, 11, 6, 12, 13, 6.5, 14, 15,
+      7, 16, 17, 7.5, 18, 19, 8, 20, 21, 8.5,
+      22, 23, 9, 24, 25, 9.5, 26, 27, 10, 28,
+      29, 10.5, 30, 31, 11, 32, 33, 11.5, 34, 35
+    ];
+
+    // Create upgrades array
+    const upgrades = [];
+    for (let i = 1; i <= 50; i++) {
+      upgrades.push({
+        id: `upg${i}`,
+        name: titles[i - 1] || `Upgrade #${i}`,
+        basePrice: 100 * i,
+        multiplier: multipliers[i - 1] || 2,
+        description: `Multiplies click power by x${multipliers[i - 1] || 2}. Boost your power beyond limits!`
+      });
+    }
+
+    function getPrice(id, basePrice) {
+      const level = parseInt(localStorage.getItem(id + "_level")) || 0;
+      return Math.floor(basePrice * Math.pow(2, level));
+    }
+
+    function buyUpgrade(upg, index) {
+      const level = parseInt(localStorage.getItem(upg.id + "_level")) || 0;
+      const price = getPrice(upg.id, upg.basePrice);
+
+      if (clicks >= price) {
+        clicks -= price;
+        localStorage.setItem("clicks", clicks);
+
+        localStorage.setItem(upg.id + "_level", level + 1);
+        localStorage.setItem(upg.id, "bought");
+
+        // Recalculate clickPower by applying all bought upgrades' multipliers
+        clickPower = 1;
+        for (let u of upgrades) {
+          const lvl = parseInt(localStorage.getItem(u.id + "_level")) || 0;
+          if (lvl > 0) {
+            clickPower *= Math.pow(u.multiplier, lvl);
+          }
+        }
+        localStorage.setItem("clickPower", clickPower);
+
+        renderUpgrades();
+      } else {
+        alert("Not enough clicks!");
+      }
+    }
+
+    function renderUpgrades() {
+      clicks = parseInt(localStorage.getItem("clicks")) || 0;
+      document.getElementById("upgrades").innerHTML = "";
+
+      upgrades.forEach((upg, index) => {
+        // Only show upgrade if previous one is bought at least once
+        const prevBought = index === 0 || (parseInt(localStorage.getItem(upgrades[index - 1].id + "_level")) || 0) > 0;
+
+        if (prevBought) {
+          const level = parseInt(localStorage.getItem(upg.id + "_level")) || 0;
+          const price = getPrice(upg.id, upg.basePrice);
+
+          const div = document.createElement("div");
+          div.className = "upgrade";
+          div.onclick = () => buyUpgrade(upg, index);
+          div.innerHTML = `
+            <div class="title">${upg.name}</div>
+            Level: ${level} <br>
+            Cost: ${price} clicks
+            <div class="description">${upg.description}</div>
+          `;
+          document.getElementById("upgrades").appendChild(div);
+        }
+      });
+    }
+
+    renderUpgrades();
+  </script>
+</body>
+</html>
